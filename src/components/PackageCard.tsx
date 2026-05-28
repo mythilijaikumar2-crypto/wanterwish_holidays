@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaClock, FaWhatsapp, FaArrowRight, FaMapMarkerAlt } from 'react-icons/fa';
 import type { TourPackage } from '../data/packages';
@@ -10,6 +10,7 @@ interface PackageCardProps {
 }
 
 export const PackageCard: React.FC<PackageCardProps> = ({ pkg }) => {
+  const navigate = useNavigate();
 
   // Generate customized WhatsApp query link
   const whatsappNumber = "918825813453";
@@ -54,10 +55,11 @@ export const PackageCard: React.FC<PackageCardProps> = ({ pkg }) => {
         hover: { y: -10, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.08)" }
       }}
       transition={{ type: "spring" as const, stiffness: 300, damping: 20 }}
-      className="flex flex-col overflow-hidden rounded-2xl bg-white border border-light-gray/40 h-full group"
+      onClick={() => navigate(`/packages/${pkg.id}`)}
+      className="flex flex-col overflow-hidden rounded-2xl bg-white border border-light-gray/40 h-full group cursor-pointer"
     >
       {/* Package Image */}
-      <div className="relative h-[220px] w-full overflow-hidden shrink-0">
+      <div className="relative h-[180px] w-full overflow-hidden shrink-0">
         <motion.img
           src={pkg.image}
           alt={pkg.title}
@@ -69,44 +71,44 @@ export const PackageCard: React.FC<PackageCardProps> = ({ pkg }) => {
         />
         
         {/* Category Badge overlay */}
-        <div className="absolute top-4 left-4 z-10">
-          <span className={`text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm tracking-wider uppercase font-heading ${getCategoryStyles(pkg.category)}`}>
+        <div className="absolute top-3 left-3 z-10">
+          <span className={`text-[9px] font-bold px-2.5 py-1 rounded-full border shadow-sm tracking-wider uppercase font-heading ${getCategoryStyles(pkg.category)}`}>
             {getCategoryName(pkg.category)}
           </span>
         </div>
       </div>
 
       {/* Package Content */}
-      <div className="flex flex-col justify-between p-6 grow">
+      <div className="flex flex-col justify-between p-4 grow">
 
         <div>
           {/* Duration info */}
-          <div className="flex items-center gap-1.5 text-xs text-text-gray/80 font-medium mb-3">
+          <div className="flex items-center gap-1.5 text-[11px] text-text-gray/80 font-semibold mb-2">
             <FaClock className="text-teal-accent" />
             <span>{pkg.duration}</span>
           </div>
 
-          <h3 className="font-heading font-bold text-lg md:text-xl text-primary-navy mb-2 line-clamp-1 group-hover:text-teal-accent transition-colors duration-300">
+          <h3 className="font-heading font-extrabold text-base text-primary-navy mb-1.5 line-clamp-1 group-hover:text-teal-accent transition-colors duration-300">
             {pkg.title}
           </h3>
 
-          <p className="text-text-gray text-xs md:text-sm line-clamp-2 leading-relaxed mb-4">
+          <p className="text-text-gray text-xs md:text-sm line-clamp-2 leading-relaxed mb-3">
             {pkg.description}
           </p>
 
           {/* Places Covered tags */}
-          <div className="flex flex-wrap gap-1.5 mb-6">
+          <div className="flex flex-wrap gap-1.5 mb-3">
             {pkg.placesCovered.slice(0, 3).map((place, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1 text-[11px] font-medium text-primary-navy/80 bg-custom-bg border border-light-gray/70 px-2 py-0.5 rounded-md"
+                className="inline-flex items-center gap-1 text-[9px] font-bold text-primary-navy/80 bg-custom-bg border border-light-gray/70 px-2 py-1 rounded-lg"
               >
-                <FaMapMarkerAlt className="text-[9px] text-teal-accent" />
+                <FaMapMarkerAlt className="text-[8px] text-teal-accent" />
                 {place}
               </span>
             ))}
             {pkg.placesCovered.length > 3 && (
-              <span className="text-[10px] font-bold text-teal-accent bg-teal-accent/5 px-2 py-0.5 rounded-md border border-teal-accent/10">
+              <span className="text-[9px] font-bold text-teal-accent bg-teal-accent/5 px-2 py-1 rounded-lg border border-teal-accent/10">
                 +{pkg.placesCovered.length - 3} More
               </span>
             )}
@@ -114,10 +116,11 @@ export const PackageCard: React.FC<PackageCardProps> = ({ pkg }) => {
         </div>
 
         {/* Action CTAs */}
-        <div className="grid grid-cols-2 gap-3 mt-auto pt-2 border-t border-light-gray/40 shrink-0">
+        <div className="grid grid-cols-2 gap-3 mt-auto pt-3 border-t border-light-gray/40 shrink-0">
           <Link
             to={`/packages/${pkg.id}`}
-            className="flex items-center justify-center gap-1.5 text-xs font-bold text-primary-navy bg-custom-bg hover:bg-light-gray/60 border border-light-gray py-3.5 px-3 rounded-xl transition-all duration-300 cursor-pointer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-primary-navy bg-custom-bg hover:bg-light-gray/60 border border-light-gray py-2.5 px-3 rounded-xl transition-all duration-300 cursor-pointer"
           >
             {"Details"}
             <motion.span
@@ -132,7 +135,8 @@ export const PackageCard: React.FC<PackageCardProps> = ({ pkg }) => {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg py-3.5 px-3 rounded-xl transition-all duration-300"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-white bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg py-2.5 px-3 rounded-xl transition-all duration-300"
           >
             <motion.span
               variants={{ hover: { scale: 1.15 } }}

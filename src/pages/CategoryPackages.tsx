@@ -1,34 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaMapMarkerAlt, FaWhatsapp, FaArrowRight,
-  FaCompass, FaRegEye, FaTimes, FaCameraRetro, FaInfoCircle,
-  FaMapMarkedAlt, FaGlobe, FaGraduationCap, FaSchool
+  FaCompass, FaRegEye, FaTimes, FaInfoCircle,
+  FaMapMarkedAlt, FaGlobe, FaGraduationCap, FaSchool,
+  FaExpandAlt, FaChevronLeft, FaChevronRight
 } from 'react-icons/fa';
 
 import { tourPackages } from '../data/packages';
 import { tourCategories } from '../data/categories';
+import { useTranslation } from 'react-i18next';
 
-// Category custom imagery mapper for header covers
+// Local hero banner image imports
+import southIndiaBanner from '../assets/South India Tour Packages/Munnar/Tea Gardens1.jpg';
+import indianBanner from '../assets/Indian Tour Packages/Kashmir/srinagar.jpeg';
+import internationalBanner from '../assets/International Tour Packages/Singapore/Marina Bay Sands1.jpg';
+import schoolBanner from '../assets/Indian Tour Packages/Goa/Fort Aguada.jpeg';
+
+// Category custom imagery mapper for header covers (uses local assets)
 const categoryImages: Record<string, { banner: string; gradient: string; tag: string }> = {
   "south-india": {
-    banner: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1600&q=80",
+    banner: southIndiaBanner,
     gradient: "from-teal-900/90 to-emerald-950/95",
     tag: "God's Own Country & Sacred Temples"
   },
   "indian-tours": {
-    banner: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1600&q=80",
+    banner: indianBanner,
     gradient: "from-blue-900/90 to-indigo-950/95",
     tag: "Himalayan Vistas & Royal Regality"
   },
   "international-tours": {
-    banner: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=1600&q=80",
+    banner: internationalBanner,
     gradient: "from-orange-950/90 to-red-950/95",
     tag: "Futuristic Wonders & Dream Shores"
   },
   "college-school-tours": {
-    banner: "https://images.unsplash.com/photo-1540206395-68808572332f?auto=format&fit=crop&w=1600&q=80",
+    banner: schoolBanner,
     gradient: "from-purple-950/90 to-orange-950/95",
     tag: "Fun, High-Energy Bonding & Safe Group Learning"
   }
@@ -103,78 +111,190 @@ const imageMetadataMap: Record<string, { title: string; location: string }> = {
   varanasi: { title: "Varanasi Ghats at Sunset", location: "Varanasi, Uttar Pradesh" }
 };
 
-// Vite glob import for local images
-const globImages = import.meta.glob('../assets/wanderimages/indiantourimgs/*.{jpeg,jpg,png,gif,webp}', { eager: true });
+// Vite glob imports for all local tour category images (recursive subfolders)
+const globIndianImages = import.meta.glob('../assets/Indian Tour Packages/**/*.{jpeg,jpg,png,gif,webp,avif}', { eager: true });
+const globSouthIndiaImages = import.meta.glob('../assets/South India Tour Packages/**/*.{jpeg,jpg,png,gif,webp,avif}', { eager: true });
+const globInternationalImages = import.meta.glob('../assets/International Tour Packages/**/*.{jpeg,jpg,png,gif,webp,avif}', { eager: true });
+// Legacy wanderimages folder (Indian tours)
+const globWanderImages = import.meta.glob('../assets/wanderimages/indiantourimgs/*.{jpeg,jpg,png,gif,webp}', { eager: true });
+
+// Helper: extract folder name (destination) and filename from a glob path
+const parseImagePath = (path: string): { destination: string; filename: string } => {
+  const parts = path.split('/');
+  const filename = (parts.pop() || '').replace(/\.[^.]+$/, '');
+  const destination = parts.pop() || 'India';
+  return { destination, filename };
+};
+
+// Build gallery items from a glob result map
+const buildGalleryItems = (
+  globMap: Record<string, unknown>,
+  category: GalleryItem['category'],
+  startId: number
+): GalleryItem[] =>
+  Object.entries(globMap).map(([path, module], idx) => {
+    const { destination, filename } = parseImagePath(path);
+    
+    // Check legacy imageMetadataMap first safely to prevent prototype lookup/pollution
+    const meta = (() => {
+      if (!filename || filename === '__proto__' || filename === 'constructor') return undefined;
+      const matched = Object.entries(imageMetadataMap).find(([key]) => key === filename);
+      if (matched) {
+        const [, val] = matched;
+        return val;
+      }
+      return undefined;
+    })();
+    const title = meta?.title ?? `${filename.replace(/[_-]/g, ' ')} - ${destination}`;
+    const location = meta?.location ?? destination;
+    return {
+      id: startId + idx,
+      url: (module as { default: string }).default,
+      category,
+      title,
+      location,
+    };
+  });
 
 const staticGalleryItems: GalleryItem[] = [
   {
     id: 1,
-    url: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80",
-    category: "indian-tours",
-    title: "Snowy Peak Trekking",
-    location: "Solang, Manali"
-  },
-  {
-    id: 2,
-    url: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=800&q=80",
-    category: "international",
-    title: "Marina Bay Light Show",
-    location: "Singapore"
-  },
-  {
-    id: 3,
-    url: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80",
-    category: "indian-tours",
-    title: "Alleppey Houseboat Sunset",
-    location: "Kerala Backwaters"
-  },
-  {
-    id: 4,
     url: "https://images.unsplash.com/photo-1540206395-68808572332f?auto=format&fit=crop&w=800&q=80",
     category: "groups",
     title: "College Student Bonfire Night",
     location: "Calangute, Goa"
   },
   {
-    id: 5,
-    url: "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=800&q=80",
-    category: "indian-tours",
-    title: "Mughal Red Fort Architecture",
-    location: "Old Delhi"
-  },
-  {
-    id: 6,
-    url: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=800&q=80",
-    category: "international",
-    title: "Sentosa Cable Car Skyline",
-    location: "Singapore Hub"
-  },
-  {
-    id: 7,
-    url: "https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=800&q=80",
-    category: "indian-tours",
-    title: "Nilgiri Mountain Toy Train",
-    location: "Ooty Hills"
-  },
-  {
-    id: 8,
+    id: 2,
     url: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=80",
     category: "groups",
     title: "High School Field Excursion",
     location: "Aerospace Museum, Bangalore"
   },
-  {
-    id: 9,
-    url: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80",
-    category: "international",
-    title: "Exotic Beachside Sunset",
-    location: "Bali Coastline"
-  }
 ];
 
+// ─── Package Image Carousel ───────────────────────────────────────────────────
+interface PackageCarouselProps {
+  images: string[];
+  alt: string;
+  duration: string;
+}
+
+const PackageCarousel: React.FC<PackageCarouselProps> = ({ images, alt, duration }) => {
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState<1 | -1>(1);
+
+  const go = (idx: number, dir: 1 | -1) => {
+    setDirection(dir);
+    setCurrent(idx);
+  };
+  const prev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    go((current - 1 + images.length) % images.length, -1);
+  };
+  const next = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    go((current + 1) % images.length, 1);
+  };
+
+  return (
+    <div className="relative h-[180px] w-full overflow-hidden shrink-0 bg-gray-100">
+      {/* Animated image */}
+      <AnimatePresence mode="popLayout" custom={direction}>
+        <motion.img
+          key={current}
+          src={images.at(current) || ''}
+          alt={`${alt} - photo ${current + 1}`}
+          custom={direction}
+          variants={{
+            enter: (d: number) => ({ opacity: 0, x: d * 40 }),
+            center: { opacity: 1, x: 0 },
+            exit: (d: number) => ({ opacity: 0, x: d * -40 }),
+          }}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.35, ease: 'easeInOut' }}
+          className="absolute inset-0 h-full w-full object-cover"
+          draggable={false}
+        />
+      </AnimatePresence>
+
+      {/* Hover overlay */}
+      <div className="absolute inset-0 bg-linear-to-t from-primary-navy/80 via-primary-navy/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3 pointer-events-none">
+        <span className="text-white text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 bg-teal-accent/90 px-2.5 py-1 rounded-xl backdrop-blur-sm">
+          <FaRegEye /> {current + 1} / {images.length} Photos
+        </span>
+      </div>
+
+      {/* Duration badge */}
+      <div className="absolute top-3 left-3 z-10">
+        <span className="text-[9px] font-bold px-2.5 py-1 rounded-full border bg-white/95 text-primary-navy border-light-gray shadow-sm tracking-wider uppercase font-heading">
+          {duration}
+        </span>
+      </div>
+
+      {/* Counter badge */}
+      {images.length > 1 && (
+        <div className="absolute top-3 right-3 z-10 text-[9px] font-bold text-white bg-black/45 px-2 py-0.5 rounded-full backdrop-blur-sm">
+          {current + 1}/{images.length}
+        </div>
+      )}
+
+      {/* Prev arrow */}
+      {images.length > 1 && (
+        <button
+          onClick={prev}
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-black/35 hover:bg-black/65 text-white transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer"
+          aria-label="Previous photo"
+        >
+          <FaChevronLeft className="text-[10px]" />
+        </button>
+      )}
+
+      {/* Next arrow */}
+      {images.length > 1 && (
+        <button
+          onClick={next}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-black/35 hover:bg-black/65 text-white transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer"
+          aria-label="Next photo"
+        >
+          <FaChevronRight className="text-[10px]" />
+        </button>
+      )}
+
+      {/* Dot indicators */}
+      {images.length > 1 && (
+        <div className="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-10">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => { e.stopPropagation(); go(i, i > current ? 1 : -1); }}
+              className={`rounded-full transition-all duration-300 cursor-pointer ${
+                i === current
+                  ? 'w-4.5 h-1.2 bg-white shadow-sm'
+                  : 'w-1.2 h-1.2 bg-white/50 hover:bg-white/80'
+              }`}
+              aria-label={`Photo ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const CategoryPackages: React.FC = () => {
+  const { t } = useTranslation();
   const { categoryId } = useParams<{ categoryId: string }>();
+  const navigate = useNavigate();
   const [selectedPhoto, setSelectedPhoto] = useState<GalleryItem | null>(null);
+
+  // Reset detail panel when modal closes
+  const closeModal = () => {
+    setSelectedPhoto(null);
+  };
 
   // Find the current category object
   const category = tourCategories.find(c => c.id === categoryId);
@@ -192,16 +312,16 @@ export const CategoryPackages: React.FC = () => {
             <FaTimes className="text-3xl" />
           </div>
           <h2 className="font-heading font-extrabold text-2xl text-primary-navy mb-2">
-            Category Not Found
+            {t('categoryNotFound')}
           </h2>
           <p className="text-text-gray text-xs md:text-sm leading-relaxed mb-8">
-            The package category you are trying to view does not exist or has been modified.
+            {t('categoryNotFoundDesc')}
           </p>
           <Link
             to="/packages"
             className="w-full justify-center bg-primary-navy hover:bg-primary-navy/90 text-orange-cta font-heading font-bold text-xs px-6 py-3.5 rounded-xl shadow-md transition-all inline-flex items-center"
           >
-            Go to Catalog
+            {t('goToCatalog')}
           </Link>
         </div>
       </div>
@@ -211,39 +331,48 @@ export const CategoryPackages: React.FC = () => {
   // Filter tour packages belonging to this category
   const categoryPackages = tourPackages.filter(p => p.category === category.id);
 
-  // Map category layout details
-  const layoutDetails = categoryImages[category.id] || {
+  // Map category layout details safely without bracket notation
+  const layoutDetails = (() => {
+    const catId = category.id;
+    if (!catId || catId === '__proto__' || catId === 'constructor') return undefined;
+    const matched = Object.entries(categoryImages).find(([key]) => key === catId);
+    if (matched) {
+      const [, val] = matched;
+      return val;
+    }
+    return undefined;
+  })() || {
     banner: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=80",
     gradient: "from-primary-navy/90 to-primary-navy/98",
     tag: "Exclusive WanderWish Holiday Experience"
   };
 
-  // Compile real gallery media matching this category
-  const importedItems: GalleryItem[] = Object.entries(globImages).map(([path, module], idx) => {
-    const filename = path.split('/').pop()?.split('.')[0] || 'image';
-    const meta = imageMetadataMap[filename] || {
-      title: filename.charAt(0).toUpperCase() + filename.slice(1) + " Sights",
-      location: "India"
-    };
-    return {
-      id: 100 + idx,
-      url: (module as { default: string }).default,
-      category: 'indian-tours' as const,
-      title: meta.title,
-      location: meta.location
-    };
-  });
+  // Build category-specific gallery items from local asset folders
+  const indianItems: GalleryItem[] = [
+    ...buildGalleryItems(globIndianImages, 'indian-tours', 100),
+    ...buildGalleryItems(globWanderImages, 'indian-tours', 1000),
+  ];
+  const southIndiaItems: GalleryItem[] = buildGalleryItems(globSouthIndiaImages, 'indian-tours', 2000);
+  const internationalItems: GalleryItem[] = buildGalleryItems(globInternationalImages, 'international', 3000);
 
-  const fullGalleryList = [...staticGalleryItems, ...importedItems];
+  const fullGalleryList = [...staticGalleryItems, ...indianItems, ...southIndiaItems, ...internationalItems];
 
   // Filter gallery photos relevant to active category
   const filteredPhotos = fullGalleryList.filter(item => {
-    if (category.id === 'indian-tours' && item.category === 'indian-tours') return true;
-    if (category.id === 'south-india' && item.location.toLowerCase().includes('kerala') || item.location.toLowerCase().includes('ooty') || item.location.toLowerCase().includes('south')) return true;
+    if (category.id === 'indian-tours' && item.category === 'indian-tours') {
+      // Only show items from the Indian Tour Packages folder (id >= 100) or wander images (id >= 1000)
+      // Exclude south india items (id >= 2000)
+      return item.id < 2000;
+    }
+    if (category.id === 'south-india') {
+      // Show south india items (id >= 2000 & < 3000)
+      return item.id >= 2000 && item.id < 3000;
+    }
     if (category.id === 'international-tours' && item.category === 'international') return true;
     if (category.id === 'college-school-tours' && item.category === 'groups') return true;
     return false;
   });
+
 
   // Category Icon Resolver
   const getCategoryIcon = (iconName: string) => {
@@ -324,10 +453,10 @@ export const CategoryPackages: React.FC = () => {
         <div className="mb-20">
           <div className="text-center mb-12">
             <span className="text-orange-cta font-heading text-xs font-bold uppercase tracking-widest block mb-2">
-              Featured Catalogue
+              {t('featuredCatalogue')}
             </span>
             <h2 className="font-heading font-black text-3xl md:text-4xl text-primary-navy uppercase tracking-tight">
-              Select Your Dream Holiday
+              {t('selectDreamHoliday')}
             </h2>
             <div className="h-1.5 w-16 bg-teal-accent mx-auto mt-4 rounded-full"></div>
           </div>
@@ -342,7 +471,7 @@ export const CategoryPackages: React.FC = () => {
             }}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6"
           >
             {categoryPackages.map((pkg) => {
 
@@ -366,51 +495,35 @@ export const CategoryPackages: React.FC = () => {
                   whileHover="hover"
                   initial="rest"
                   animate="rest"
-                  className="flex flex-col overflow-hidden rounded-3xl bg-white border border-light-gray/45 shadow-premium hover:shadow-2xl group transition-all duration-300 relative h-full"
+                  onClick={() => navigate(`/packages/${pkg.id}`)}
+                  className="flex flex-col overflow-hidden rounded-2xl bg-white border border-light-gray/45 shadow-premium hover:shadow-2xl group transition-all duration-300 relative h-full cursor-pointer"
                 >
-                  {/* Photo Section with Zoom & Hover Actions */}
-                  <div className="relative h-[250px] w-full overflow-hidden shrink-0">
-                    <motion.img
-                      src={pkg.image}
-                      alt={pkg.title}
-                      variants={{ hover: { scale: 1.08 } }}
-                      transition={{ duration: 0.5, ease: "easeOut" }}
-                      className="h-full w-full object-cover"
-                    />
-                    
-                    {/* Dark gradient slide overlay on hover */}
-                    <div className="absolute inset-0 bg-linear-to-t from-primary-navy/85 via-primary-navy/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                      <span className="text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1 bg-teal-accent/90 px-3 py-1.5 rounded-xl backdrop-blur-xs">
-                        <FaRegEye /> Interactive Visuals
-                      </span>
-                    </div>
-
-                    <div className="absolute top-4 left-4 z-10">
-                      <span className="text-[10px] font-bold px-3 py-1.5 rounded-full border bg-white/95 text-primary-navy border-light-gray shadow-sm tracking-wider uppercase font-heading">
-                        {pkg.duration}
-                      </span>
-                    </div>
-                  </div>
+                  {/* Photo Carousel Section */}
+                  <PackageCarousel
+                    images={pkg.images}
+                    alt={pkg.title}
+                    duration={pkg.duration}
+                  />
 
                   {/* Card Info Section */}
-                  <div className="flex flex-col justify-between p-7 grow">
+                  <div className="flex flex-col justify-between p-4 grow">
                     <div>
-                      <h3 className="font-heading font-extrabold text-xl text-primary-navy mb-3 line-clamp-1 group-hover:text-teal-accent transition-colors duration-300">
+                      <h3 className="font-heading font-extrabold text-base text-primary-navy mb-1.5 line-clamp-1 group-hover:text-teal-accent transition-colors duration-300">
                         {pkg.title}
                       </h3>
                       
-                      <p className="text-text-gray text-xs md:text-sm line-clamp-2 leading-relaxed mb-6">
+                      <p className="text-text-gray text-xs md:text-sm line-clamp-2 leading-relaxed mb-3">
                         {pkg.description}
                       </p>
 
                       {/* Flexed Places Covered tags */}
-                      <div className="flex flex-wrap gap-2 mb-6">
+                      <div className="flex flex-wrap gap-1.5 mb-3">
                         {pkg.placesCovered.map((place, idx) => (
                           <span
                             key={idx}
-                            className="inline-flex items-center gap-1 text-[10px] font-bold text-primary-navy/80 bg-custom-bg border border-light-gray/60 px-3 py-1.5 rounded-xl"
+                            className="inline-flex items-center gap-1 text-[9px] font-bold text-primary-navy/80 bg-custom-bg border border-light-gray/60 px-2 py-1 rounded-lg"
                           >
-                            <FaMapMarkerAlt className="text-[9px] text-teal-accent" />
+                            <FaMapMarkerAlt className="text-[8px] text-teal-accent" />
                             {place}
                           </span>
                         ))}
@@ -418,14 +531,15 @@ export const CategoryPackages: React.FC = () => {
                     </div>
 
                     {/* pricing and action buttons grid flex */}
-                    <div className="mt-auto pt-5 border-t border-light-gray/45 flex flex-col gap-4">
+                    <div className="mt-auto pt-3 border-t border-light-gray/45 flex flex-col gap-4">
 
                       <div className="grid grid-cols-2 gap-3 shrink-0">
                         <Link
                           to={`/packages/${pkg.id}`}
-                          className="flex items-center justify-center gap-1.5 text-xs font-bold text-primary-navy bg-custom-bg hover:bg-light-gray/60 border border-light-gray py-4 px-3 rounded-xl transition-all duration-300 cursor-pointer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-primary-navy bg-custom-bg hover:bg-light-gray/60 border border-light-gray py-2.5 px-3 rounded-xl transition-all duration-300 cursor-pointer"
                         >
-                          Details
+                          {t('detailsLabel')}
                           <motion.span
                             variants={{ hover: { x: 3 } }}
                             transition={{ type: "spring", stiffness: 200, damping: 10 }}
@@ -438,7 +552,8 @@ export const CategoryPackages: React.FC = () => {
                           href={cardWhatsappUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg py-4 px-3 rounded-xl transition-all duration-300"
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-white bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg py-2.5 px-3 rounded-xl transition-all duration-300"
                         >
                           <FaWhatsapp className="text-sm shrink-0" />
                           Enquire
@@ -457,10 +572,10 @@ export const CategoryPackages: React.FC = () => {
           <div className="mb-20">
             <div className="text-center mb-12">
               <span className="text-orange-cta font-heading text-xs font-bold uppercase tracking-widest block mb-2">
-                Traveler Diaries
+                {t('travelerDiaries')}
               </span>
               <h2 className="font-heading font-black text-3xl md:text-4xl text-primary-navy uppercase tracking-tight">
-                Trips Captured On Location
+                {t('tripsCapturedOnLocation')}
               </h2>
               <div className="h-1.5 w-16 bg-teal-accent mx-auto mt-4 rounded-full"></div>
             </div>
@@ -498,17 +613,22 @@ export const CategoryPackages: React.FC = () => {
                       rest: { opacity: 0, y: 15 },
                       hover: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120, damping: 14 } }
                     }}
-                    className="absolute inset-0 p-6 flex flex-col justify-end text-white z-10"
+                    className="absolute inset-0 p-5 flex flex-col justify-end text-white z-10"
                   >
                     <div className="flex items-center gap-1 text-orange-cta mb-1">
-                      <FaCompass className="text-[10px]" />
+                      <FaMapMarkerAlt className="text-[10px]" />
                       <span className="text-[9px] font-extrabold uppercase tracking-widest font-heading">{photo.location}</span>
                     </div>
-                    <h4 className="font-heading font-bold text-base text-white mb-2">{photo.title}</h4>
+                    <h4 className="font-heading font-bold text-sm text-white mb-3 line-clamp-2">{photo.title}</h4>
                     
-                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal-accent bg-teal-accent/10 border border-teal-accent/20 px-2.5 py-1 rounded-lg w-fit backdrop-blur-sm">
-                      <FaCameraRetro /> View Large
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold text-white/80 bg-white/10 border border-white/20 px-2.5 py-1.5 rounded-lg w-fit backdrop-blur-sm">
+                        <FaExpandAlt className="text-[8px]" /> View Photo
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold text-primary-navy bg-orange-cta px-2.5 py-1.5 rounded-lg w-fit cursor-pointer hover:bg-orange-400 transition-colors">
+                        <FaInfoCircle className="text-[8px]" /> Details
+                      </span>
+                    </div>
                   </motion.div>
                 </motion.div>
               ))}
@@ -528,13 +648,13 @@ export const CategoryPackages: React.FC = () => {
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-teal-accent/5 rounded-tr-full"></div>
           
           <span className="text-orange-cta font-heading text-xs font-bold uppercase tracking-widest block mb-2">
-            Tailor-Made Holidays
+            {t('tailorMadeHolidays')}
           </span>
           <h3 className="font-heading font-black text-3xl md:text-4xl uppercase mb-4 text-white">
-            Need A Fully Customized Plan?
+            {t('needCustomPlan')}
           </h3>
           <p className="text-white/75 text-xs md:text-sm max-w-2xl mx-auto leading-relaxed mb-8">
-            Tell us your preferred days, locations, and headcount. Our founder, **Vinothini**, will design a customized itinerary aligned perfectly with your demands.
+            {t('customPlanDesc')}
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
@@ -560,59 +680,107 @@ export const CategoryPackages: React.FC = () => {
 
       </div>
 
-      {/* 6. Lightbox Overlay Photo Preview Modal */}
+      {/* 6. Lightbox Overlay Photo Preview Modal with Direct Details & CTAs */}
       <AnimatePresence>
-        {selectedPhoto && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary-navy/95 backdrop-blur-md"
-            onClick={() => setSelectedPhoto(null)}
-          >
+        {selectedPhoto && (() => {
+          // Dynamic matching to rich package
+          const matchedPackageId = (() => {
+            const locLower = selectedPhoto.location.toLowerCase();
+            const matched = tourPackages.find(p => 
+              p.title.toLowerCase().includes(locLower) || 
+              p.placesCovered.some(pl => pl.toLowerCase().includes(locLower)) ||
+              p.description.toLowerCase().includes(locLower)
+            );
+            return matched ? matched.id : null;
+          })();
+
+          const detailsUrl = matchedPackageId ? `/packages/${matchedPackageId}` : '/packages';
+          const detailsLabel = matchedPackageId ? "Full Details" : "View Packages";
+
+          return (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              transition={{ type: "spring", stiffness: 110, damping: 15 }}
-              className="relative max-w-4xl w-full rounded-3xl overflow-hidden bg-primary-navy border border-white/10 shadow-2xl flex flex-col"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary-navy/95 backdrop-blur-md"
+              onClick={closeModal}
             >
-              <button
-                onClick={() => setSelectedPhoto(null)}
-                className="absolute top-4 right-4 z-10 p-3 rounded-full bg-black/60 hover:bg-black/80 text-white transition-all cursor-pointer"
-                title="Close"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                transition={{ type: "spring", stiffness: 110, damping: 15 }}
+                className="relative max-w-3xl w-full rounded-3xl max-h-[90vh] overflow-y-auto scrollbar-thin bg-[#0d1b2a] border border-white/10 shadow-2xl flex flex-col"
+                onClick={(e) => e.stopPropagation()}
               >
-                <FaTimes className="text-base" />
-              </button>
+                {/* Close button */}
+                <button
+                  onClick={closeModal}
+                  className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white transition-all cursor-pointer"
+                  title="Close"
+                >
+                  <FaTimes className="text-sm" />
+                </button>
 
-              <div className="aspect-16/10 w-full overflow-hidden">
-                <img 
-                  src={selectedPhoto.url} 
-                  alt={selectedPhoto.title} 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div className="p-6 bg-primary-navy text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-white/5">
-                <div>
-                  <h3 className="font-heading font-extrabold text-xl text-white">
-                    {selectedPhoto.title}
-                  </h3>
-                  <p className="text-white/60 text-xs mt-1">
-                    Past tour captured live under the {category.name} catalog.
-                  </p>
+                {/* Photo */}
+                <div className="w-full overflow-hidden aspect-16/10 max-h-[50vh]">
+                  <img 
+                    src={selectedPhoto.url} 
+                    alt={selectedPhoto.title} 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-orange-cta bg-orange-50/10 border border-orange-200/20 px-3.5 py-1.5 rounded-xl uppercase tracking-wider">
-                  <FaCompass className="text-xs" /> {selectedPhoto.location}
-                </span>
-              </div>
+
+                {/* Info and Action Buttons Bottom Bar */}
+                <div className="p-6 bg-[#0d1b2a] border-t border-white/8 flex flex-col gap-5 relative z-10 text-white">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <FaMapMarkerAlt className="text-orange-cta text-[10px] shrink-0" />
+                        <span className="text-orange-cta text-[10px] font-extrabold uppercase tracking-widest font-heading">
+                          {selectedPhoto.location}
+                        </span>
+                      </div>
+                      <h3 className="font-heading font-black text-xl text-white leading-tight m-0">
+                        {selectedPhoto.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <p className="text-white/70 text-xs leading-relaxed m-0">
+                    {t('exploreStunningVistas')}<span className="text-white font-semibold">{selectedPhoto.title}</span> located in <span className="text-orange-cta font-medium">{selectedPhoto.location}</span>. Part of our curated <span className="text-teal-accent font-medium">{category.name}</span>, this popular spot offers memories of a lifetime with premium accommodation and guided routes.
+                  </p>
+
+                  {/* Always-visible direct action buttons */}
+                  <div className="grid grid-cols-2 gap-4 mt-1">
+                    <Link
+                      to={detailsUrl}
+                      onClick={closeModal}
+                      className="inline-flex items-center justify-center gap-2 text-xs font-bold text-primary-navy bg-orange-cta hover:bg-orange-400 py-3.5 px-4 rounded-xl transition-all duration-300 shadow-md text-center cursor-pointer"
+                    >
+                      <FaInfoCircle className="text-xs shrink-0" />
+                      {detailsLabel}
+                    </Link>
+                    
+                    <a
+                      href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hi WanderWish! I saw the gorgeous photo of "${selectedPhoto.title}" in ${selectedPhoto.location} and would like to plan a custom holiday itinerary.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 text-xs font-bold text-white bg-green-500 hover:bg-green-600 py-3.5 px-4 rounded-xl transition-all duration-300 shadow-md text-center"
+                    >
+                      <FaWhatsapp className="text-sm shrink-0" />
+                      Enquire
+                    </a>
+                  </div>
+                </div>
+
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
+          );
+        })()}
       </AnimatePresence>
 
     </div>
   );
 };
+

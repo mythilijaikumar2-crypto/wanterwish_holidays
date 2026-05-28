@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBars, FaTimes, FaChevronDown, FaWhatsapp } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 import logoImg from '../assets/wanderlogopng.png';
 
 
 export const Navbar: React.FC = () => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const location = useLocation();
+  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Scroll detection to update background styling
   useEffect(() => {
@@ -24,11 +27,37 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close navigation drawer and dropdown on route changes
+  // Close navigation drawer and dropdown on route changes asynchronously to avoid synchronous cascading state updates
   useEffect(() => {
-    setIsOpen(false);
-    setIsDropdownOpen(false);
+    const handle = setTimeout(() => {
+      setIsOpen(false);
+      setIsDropdownOpen(false);
+    }, 0);
+    return () => clearTimeout(handle);
   }, [location]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (dropdownTimeoutRef.current) {
+        clearTimeout(dropdownTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleMouseEnter = () => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+      dropdownTimeoutRef.current = null;
+    }
+    setIsDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setIsDropdownOpen(false);
+    }, 200); // 200ms grace period buffer for diagonal sweeping
+  };
 
   const packageCategories = [
     { name: "Indian Tour Packages", id: "indian-tours" },
@@ -76,16 +105,16 @@ export const Navbar: React.FC = () => {
               }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 350, damping: 15 }}
-              className="h-11 w-11 min-w-[2.75rem] rounded-xl bg-white p-0.5 flex items-center justify-center shadow-md border border-teal-500/20 transition-all duration-300"
+              className="h-11 w-11 min-w-11 rounded-xl bg-white p-0.5 flex items-center justify-center shadow-md border border-teal-500/20 transition-all duration-300"
             >
               <img src={logoImg} alt="WanderWish Holidays Logo" className="h-full w-full object-contain" />
             </motion.div>
             <div className="flex flex-col">
               <span className="font-heading font-black text-lg md:text-xl tracking-tight text-white group-hover:text-orange-cta transition-colors duration-300">
-                WanderWish
+                {t('brandName')}
               </span>
               <span className="text-[9px] uppercase tracking-widest text-orange-cta font-black font-sans leading-none mt-0.5">
-                Holidays
+                {t('brandSub')}
               </span>
             </div>
           </Link>
@@ -93,7 +122,7 @@ export const Navbar: React.FC = () => {
           {/* Desktop Navigation Links */}
           <div className="hidden lg:flex items-center gap-8">
             <Link to="/" className={`relative py-2 ${linkStyles('/')}`}>
-              <span>Home</span>
+              <span>{t('navHome')}</span>
               {isActive('/') && (
                 <motion.span 
                   layoutId="activeIndicator" 
@@ -104,7 +133,7 @@ export const Navbar: React.FC = () => {
             </Link>
             
             <Link to="/about" className={`relative py-2 ${linkStyles('/about')}`}>
-              <span>About</span>
+              <span>{t('navAbout')}</span>
               {isActive('/about') && (
                 <motion.span 
                   layoutId="activeIndicator" 
@@ -117,17 +146,17 @@ export const Navbar: React.FC = () => {
             {/* Desktop Packages Dropdown */}
             <div 
               className="relative py-2"
-              onMouseEnter={() => setIsDropdownOpen(true)}
-              onMouseLeave={() => setIsDropdownOpen(false)}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
             >
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIsDropdownOpen(true);
+                  setIsDropdownOpen(prev => !prev);
                 }}
                 className={`flex items-center gap-1 cursor-pointer focus:outline-none ${linkStyles('/packages')}`}
               >
-                Packages
+                {t('navPackages')}
                 <FaChevronDown className={`text-[10px] mt-0.5 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               
@@ -138,25 +167,27 @@ export const Navbar: React.FC = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 w-60 mt-3 rounded-2xl overflow-hidden bg-primary-navy shadow-2xl py-2.5 border border-white/10 z-50 backdrop-blur-xl"
+                    className="absolute top-full left-1/2 -translate-x-1/2 w-60 pt-3 z-50"
                   >
-                    {packageCategories.map((cat, idx) => (
-                      <Link
-                        key={idx}
-                        to={`/packages/category/${cat.id}`}
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="block px-5 py-3 text-xs text-white/90 hover:text-primary-navy hover:bg-orange-cta transition-all duration-200 font-bold"
-                      >
-                        {cat.name}
-                      </Link>
-                    ))}
+                    <div className="rounded-2xl overflow-hidden bg-primary-navy shadow-2xl py-2.5 border border-white/10 backdrop-blur-xl">
+                      {packageCategories.map((cat, idx) => (
+                        <Link
+                          key={idx}
+                          to={`/packages/category/${cat.id}`}
+                          onClick={() => setIsDropdownOpen(false)}
+                          className="block px-5 py-3 text-xs text-white/90 hover:text-primary-navy hover:bg-orange-cta transition-all duration-200 font-bold"
+                        >
+                          {cat.name}
+                        </Link>
+                      ))}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
             <Link to="/destinations" className={`relative py-2 ${linkStyles('/destinations')}`}>
-              <span>Destinations</span>
+              <span>{t('navDestinations')}</span>
               {isActive('/destinations') && (
                 <motion.span 
                   layoutId="activeIndicator" 
@@ -167,7 +198,7 @@ export const Navbar: React.FC = () => {
             </Link>
             
             <Link to="/gallery" className={`relative py-2 ${linkStyles('/gallery')}`}>
-              <span>Gallery</span>
+              <span>{t('navGallery')}</span>
               {isActive('/gallery') && (
                 <motion.span 
                   layoutId="activeIndicator" 
@@ -178,7 +209,7 @@ export const Navbar: React.FC = () => {
             </Link>
             
             <Link to="/contact" className={`relative py-2 ${linkStyles('/contact')}`}>
-              <span>Contact</span>
+              <span>{t('navContact')}</span>
               {isActive('/contact') && (
                 <motion.span 
                   layoutId="activeIndicator" 
@@ -224,16 +255,17 @@ export const Navbar: React.FC = () => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="lg:hidden w-full bg-primary-navy/98 border-t border-white/5 backdrop-blur-xl overflow-hidden shadow-2xl"
+            className="lg:hidden w-full bg-primary-navy/98 border-t border-white/5 backdrop-blur-xl max-h-[calc(100vh-100px)] overflow-y-auto scrollbar-thin shadow-2xl"
           >
             <div className="px-5 pt-4 pb-6 space-y-2 flex flex-col">
-              <Link to="/" className={mobileLinkStyles('/')}>Home</Link>
-              <Link to="/about" className={mobileLinkStyles('/about')}>About</Link>
+              <Link to="/" className={mobileLinkStyles('/')}>{t('navHome')}</Link>
+              <Link to="/about" className={mobileLinkStyles('/about')}>{t('navAbout')}</Link>
+              <Link to="/packages" className={mobileLinkStyles('/packages')}>{t('navPackages')}</Link>
               
               {/* Nested Categories list on Mobile */}
               <div className="py-2 border-b border-white/10">
                 <span className="text-xs font-bold uppercase tracking-wider text-orange-cta block mb-2">
-                  Our Packages
+                  {t('browseByCategory')}
                 </span>
                 <div className="grid grid-cols-1 gap-2 pl-3">
                   {packageCategories.map((cat, idx) => (
@@ -248,9 +280,9 @@ export const Navbar: React.FC = () => {
                 </div>
               </div>
 
-              <Link to="/destinations" className={mobileLinkStyles('/destinations')}>Destinations</Link>
-              <Link to="/gallery" className={mobileLinkStyles('/gallery')}>Gallery</Link>
-              <Link to="/contact" className={mobileLinkStyles('/contact')}>Contact</Link>
+              <Link to="/destinations" className={mobileLinkStyles('/destinations')}>{t('navDestinations')}</Link>
+              <Link to="/gallery" className={mobileLinkStyles('/gallery')}>{t('navGallery')}</Link>
+              <Link to="/contact" className={mobileLinkStyles('/contact')}>{t('navContact')}</Link>
               
               <div className="pt-6">
                 <a

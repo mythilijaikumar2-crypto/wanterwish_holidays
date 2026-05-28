@@ -32,6 +32,31 @@ const resources = {
       enquirySubmitted: "Enquiry Submitted!",
       thankYouMessage: "Thank you, {{name}}! Your holiday inquiry for {{title}} has been captured. Our director, Vinothini, will contact you via {{phone}} very shortly.",
       enquireAnother: "Enquire Another Package",
+
+      // Global Navbar and General Layout Elements
+      navHome: "Home",
+      navAbout: "About",
+      navPackages: "Packages",
+      navDestinations: "Destinations",
+      navGallery: "Gallery",
+      navContact: "Contact",
+      brandName: "WanderWish",
+      brandSub: "Holidays",
+      browseByCategory: "Browse by Category",
+
+      // Category Packages Specific
+      categoryNotFound: "Category Not Found",
+      categoryNotFoundDesc: "The package category you are trying to view does not exist or has been modified.",
+      goToCatalog: "Go to Catalog",
+      featuredCatalogue: "Featured Catalogue",
+      selectDreamHoliday: "Select Your Dream Holiday",
+      detailsLabel: "Details",
+      travelerDiaries: "Traveler Diaries",
+      tripsCapturedOnLocation: "Trips Captured On Location",
+      tailorMadeHolidays: "Tailor-Made Holidays",
+      needCustomPlan: "Need A Fully Customized Plan?",
+      customPlanDesc: "Tell us your preferred days, locations, and headcount. Our founder, Vinothini, will design a customized itinerary aligned perfectly with your demands.",
+      exploreStunningVistas: "Explore the stunning vistas of "
     }
   }
 };

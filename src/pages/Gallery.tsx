@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaRegEye, FaFilter, FaCompass } from 'react-icons/fa';
+import { FaTimes, FaRegEye, FaFilter, FaCompass, FaInfoCircle, FaWhatsapp, FaMapMarkerAlt } from 'react-icons/fa';
+import { tourPackages } from '../data/packages';
 
 interface GalleryItem {
   id: number;
@@ -349,59 +351,103 @@ export const Gallery: React.FC = () => {
 
         {/* 10. Lightbox Overlay Modal */}
         <AnimatePresence>
-          {selectedItem && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary-navy/95 backdrop-blur-md"
-              onClick={() => setSelectedItem(null)}
-            >
-              {/* Animated Lightbox Content Box */}
+          {selectedItem && (() => {
+            // Dynamic matching to rich package
+            const matchedPackageId = (() => {
+              const locLower = selectedItem.location.toLowerCase();
+              const matched = tourPackages.find(p => 
+                p.title.toLowerCase().includes(locLower) || 
+                p.placesCovered.some(pl => pl.toLowerCase().includes(locLower)) ||
+                p.description.toLowerCase().includes(locLower)
+              );
+              return matched ? matched.id : null;
+            })();
+
+            const detailsUrl = matchedPackageId ? `/packages/${matchedPackageId}` : '/packages';
+            const detailsLabel = matchedPackageId ? "Full Details" : "View Packages";
+            const whatsappNumber = "918825813453";
+
+            return (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                transition={{ type: "spring" as const, stiffness: 110, damping: 15 }}
-                className="relative max-w-4xl w-full rounded-3xl overflow-hidden bg-primary-navy border border-white/10 shadow-2xl flex flex-col"
-                onClick={(e) => e.stopPropagation()}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary-navy/95 backdrop-blur-md"
+                onClick={() => setSelectedItem(null)}
               >
-                {/* Modal close icon */}
-                <button
-                  onClick={() => setSelectedItem(null)}
-                  className="absolute top-4 right-4 z-10 p-3 rounded-full bg-black/60 hover:bg-black/80 text-white transition-all cursor-pointer"
-                  title="Close Preview"
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                  transition={{ type: "spring", stiffness: 110, damping: 15 }}
+                  className="relative max-w-3xl w-full rounded-3xl max-h-[90vh] overflow-y-auto scrollbar-thin bg-[#0d1b2a] border border-white/10 shadow-2xl flex flex-col"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <FaTimes className="text-base" />
-                </button>
+                  {/* Close button */}
+                  <button
+                    onClick={() => setSelectedItem(null)}
+                    className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white transition-all cursor-pointer"
+                    title="Close"
+                  >
+                    <FaTimes className="text-sm" />
+                  </button>
 
-                {/* Big Image */}
-                <div className="aspect-16/10 w-full overflow-hidden">
-                  <img 
-                    src={selectedItem.url} 
-                    alt={selectedItem.title} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {/* Footer details inside Modal */}
-                <div className="p-6 bg-primary-navy text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-white/5">
-                  <div>
-                    <h3 className="font-heading font-extrabold text-xl text-white">
-                      {selectedItem.title}
-                    </h3>
-                    <p className="text-white/60 text-xs mt-1">
-                      WanderWish Holidays custom group packages.
-                    </p>
+                  {/* Photo */}
+                  <div className="w-full overflow-hidden aspect-16/10 max-h-[50vh]">
+                    <img 
+                      src={selectedItem.url} 
+                      alt={selectedItem.title} 
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-orange-cta bg-orange-50/10 border border-orange-200/20 px-3.5 py-1.5 rounded-xl uppercase tracking-wider">
-                    <FaCompass className="text-xs" /> {selectedItem.location}
-                  </span>
-                </div>
+
+                  {/* Info and Action Buttons Bottom Bar */}
+                  <div className="p-6 bg-[#0d1b2a] border-t border-white/8 flex flex-col gap-5 relative z-10 text-white">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <FaMapMarkerAlt className="text-orange-cta text-[10px] shrink-0" />
+                          <span className="text-orange-cta text-[10px] font-extrabold uppercase tracking-widest font-heading">
+                            {selectedItem.location}
+                          </span>
+                        </div>
+                        <h3 className="font-heading font-black text-xl text-white leading-tight m-0">
+                          {selectedItem.title}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <p className="text-white/70 text-xs leading-relaxed m-0">
+                      Explore the stunning vistas of <span className="text-white font-semibold">{selectedItem.title}</span> located in <span className="text-orange-cta font-medium">{selectedItem.location}</span>. We design tailor-made tour packages matching this destination with premium stays and secure transport.
+                    </p>
+
+                    {/* Always-visible direct action buttons */}
+                    <div className="grid grid-cols-2 gap-4 mt-1">
+                      <Link
+                        to={detailsUrl}
+                        onClick={() => setSelectedItem(null)}
+                        className="inline-flex items-center justify-center gap-2 text-xs font-bold text-primary-navy bg-orange-cta hover:bg-orange-400 py-3.5 px-4 rounded-xl transition-all duration-300 shadow-md text-center cursor-pointer font-heading"
+                      >
+                        <FaInfoCircle className="text-xs shrink-0" />
+                        {detailsLabel}
+                      </Link>
+                      
+                      <a
+                        href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hi WanderWish! I saw the gorgeous photo of "${selectedItem.title}" in ${selectedItem.location} and would like to plan a custom holiday itinerary.`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 text-xs font-bold text-white bg-green-500 hover:bg-green-600 py-3.5 px-4 rounded-xl transition-all duration-300 shadow-md text-center font-heading"
+                      >
+                        <FaWhatsapp className="text-sm shrink-0" />
+                        Enquire
+                      </a>
+                    </div>
+                  </div>
+
+                </motion.div>
               </motion.div>
-            </motion.div>
-          )}
+            );
+          })()}
         </AnimatePresence>
 
       </div>
