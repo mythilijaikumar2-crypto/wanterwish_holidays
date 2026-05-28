@@ -101,10 +101,11 @@ export const Home: React.FC = () => {
           title="Explore Our Tour Categories" 
           subtitle="Choose Your Travel Style"
         />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr justify-items-center items-stretch mx-auto max-w-6xl">
           {tourCategories.map(cat => (
             <motion.div
               key={cat.id}
+              className="h-full flex flex-col"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

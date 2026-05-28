@@ -28,7 +28,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
     <motion.div
       whileHover={{ y: -8 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="relative flex flex-col justify-between overflow-hidden rounded-2xl bg-white p-8 shadow-premium hover:shadow-2xl border border-light-gray/40 group h-full"
+      className="relative flex flex-col justify-between overflow-hidden rounded-2xl bg-white p-2 w-full h-full max-w-xs mx-auto min-h-[300px]"
     >
       {/* Decorative backdrop gradient circle */}
       <div className={`absolute -right-12 -top-12 h-32 w-32 rounded-full bg-linear-to-br ${category.gradient} opacity-10 group-hover:scale-125 transition-transform duration-500`}></div>
