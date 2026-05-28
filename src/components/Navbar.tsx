@@ -67,7 +67,12 @@ export const Navbar: React.FC = () => {
   ];
 
   // Help generate active state styling
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
 
   const linkStyles = (path: string) => {
     const activeClass = "text-orange-cta font-semibold";
@@ -149,16 +154,23 @@ export const Navbar: React.FC = () => {
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDropdownOpen(prev => !prev);
+              <Link 
+                to="/packages"
+                onClick={() => {
+                  setIsDropdownOpen(false);
                 }}
                 className={`flex items-center gap-1 cursor-pointer focus:outline-none ${linkStyles('/packages')}`}
               >
-                {t('navPackages')}
+                <span>{t('navPackages')}</span>
                 <FaChevronDown className={`text-[10px] mt-0.5 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
+                {isActive('/packages') && (
+                  <motion.span 
+                    layoutId="activeIndicator" 
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-cta rounded-full shadow-[0_0_8px_rgba(246,166,35,0.8)]"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </Link>
               
               <AnimatePresence>
                 {isDropdownOpen && (
