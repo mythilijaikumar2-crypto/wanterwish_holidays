@@ -1,6 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaCalendarAlt, FaBullseye, FaEye, FaAward, FaUsers, FaGlobeAsia, FaHeadset } from 'react-icons/fa';
+import { 
+  FaCalendarAlt, FaBullseye, FaEye, FaAward, FaUsers, 
+  FaGlobeAsia, FaHeadset, FaMapMarkedAlt, FaGraduationCap, 
+  FaSuitcase, FaHeart 
+} from 'react-icons/fa';
+import { TypeAnimation } from 'react-type-animation';
 
 
 
@@ -15,86 +20,155 @@ export const About: React.FC = () => {
   return (
     <div className="bg-custom-bg min-h-screen pt-28 pb-20">
       
-      {/* Page Header Cover */}
-      <div className="relative h-[250px] bg-primary-navy overflow-hidden flex items-center justify-center mb-16">
+      {/* Cinematic Perspective Video Hero */}
+      <div className="relative min-h-[480px] bg-primary-navy overflow-hidden flex items-center justify-center mb-16 rounded-b-[3rem] border-b border-teal-500/10 shadow-2xl">
+        {/* Video Element */}
+        <div className="absolute inset-0 z-0 scale-105 transform">
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            className="w-full h-full object-cover"
+          >
+            <source src="/src/assets/v1.mp4" type="video/mp4" />
+          </video>
+          {/* Stunning radial and linear overlay gradient combination */}
+          <div className="absolute inset-0 bg-gradient-to-b from-primary-navy/85 via-primary-navy/60 to-primary-navy"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(27,154,170,0.25),transparent_70%)]"></div>
+        </div>
+
+        {/* Floating cinematic grid lines for depth/perspective */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:35px_35px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_90%)] pointer-events-none opacity-45 z-10"></div>
+
+        {/* Content with 3D tilt perspective entrance */}
         <motion.div 
-          initial={{ opacity: 0, scale: 1.15 }}
-          animate={{ opacity: 0.45, scale: 1 }}
-          transition={{ duration: 1.6, ease: "easeOut" }}
-          className="absolute inset-0 bg-cover bg-center" 
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80')" }}
-        ></motion.div>
-        <div className="absolute inset-0 bg-linear-to-b from-primary-navy/80 to-primary-navy"></div>
-        <div className="relative text-center text-white z-10 px-4">
+          initial={{ opacity: 0, y: 30, rotateX: 12 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+          className="relative text-center text-white z-20 px-4 max-w-4xl"
+          style={{ perspective: 1000 }}
+        >
           <motion.span 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-orange-cta font-heading text-xs font-bold uppercase tracking-widest block mb-2"
+            initial={{ opacity: 0, letterSpacing: "0.1em" }}
+            animate={{ opacity: 1, letterSpacing: "0.3em" }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="text-orange-cta font-heading text-xs font-bold uppercase block mb-3"
           >
             Who We Are
           </motion.span>
           <motion.h1 
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 80, damping: 12, delay: 0.2 }}
-            className="font-heading font-black text-4xl sm:text-5xl uppercase tracking-tight text-white m-0"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 85, damping: 14, delay: 0.3 }}
+            className="font-heading font-black text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight text-white m-0 drop-shadow-lg"
           >
-            About WanderWish
+            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-teal-100 to-orange-cta">WanderWish</span>
           </motion.h1>
-        </div>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 0.85, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="text-white/80 text-xs md:text-sm font-medium max-w-2xl mx-auto mt-4 leading-relaxed font-sans"
+          >
+            Curating seamless, customized travel itineraries and school expeditions across gorgeous destinations with full hospitality.
+          </motion.p>
+        </motion.div>
+
+        {/* Ambient bottom curved horizon mask */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-custom-bg to-transparent z-10"></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Core Profile: Story & Founder */}
+        {/* Interactive Company Story & Service Showcase */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-24">
-          {/* Column 1: Image container */}
+          
+          {/* Column 1: Dynamic Typing Animation Showcase Box */}
           <motion.div 
             initial={{ opacity: 0, x: -50, scale: 0.95 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ type: "spring" as const, stiffness: 80, damping: 15 }}
-            whileHover={{ y: -8, rotate: -1 }}
-            className="lg:col-span-5 relative group"
+            transition={{ type: "spring", stiffness: 80, damping: 15 }}
+            className="lg:col-span-5 bg-primary-navy text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden group border border-white/10 flex flex-col justify-between min-h-[460px]"
           >
-            <div className="absolute -inset-4 bg-teal-accent/10 rounded-3xl -rotate-3 -z-10 transition-transform group-hover:scale-102"></div>
-            <div className="absolute -inset-4 bg-orange-cta/10 rounded-3xl rotate-3 -z-10 transition-transform group-hover:scale-102"></div>
-            <div className="overflow-hidden rounded-2xl shadow-premium aspect-4/5">
-              <img 
-                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80" 
-                alt="Vinothini - Founder of WanderWish Holidays" 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103"
-              />
-            </div>
-            {/* Founder details badge */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ type: "spring" as const, stiffness: 100, damping: 14, delay: 0.3 }}
-              className="absolute bottom-6 left-6 right-6 bg-primary-navy/95 backdrop-blur-md text-white p-4 rounded-xl shadow-xl border border-white/10 group-hover:border-orange-cta/30 transition-colors duration-300"
-            >
-              <span className="text-orange-cta text-[10px] font-bold tracking-widest uppercase block mb-1">
-                Founder & Lead Director
+            {/* Visual ambient glows inside the box */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-teal-accent/5 rounded-bl-full pointer-events-none"></div>
+            <div className="absolute -bottom-10 -left-10 w-44 h-44 bg-orange-cta/5 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div>
+              <span className="text-orange-cta font-heading text-xs font-bold uppercase tracking-wider block mb-4">
+                What We Do Best
               </span>
-              <h3 className="font-heading font-extrabold text-lg text-white m-0">
-                Vinothini
-              </h3>
-              <p className="text-white/60 text-xs mt-1">
-                Founded WanderWish Holidays in 2026.
-              </p>
-            </motion.div>
+              
+              {/* Massive Typing Animation display */}
+              <div className="min-h-[140px] flex flex-col justify-start">
+                <span className="font-heading font-black text-2xl md:text-3xl text-white/60 block leading-tight">
+                  At WanderWish,
+                </span>
+                <span className="font-heading font-black text-2xl md:text-3xl text-orange-cta block mt-2 leading-tight">
+                  <TypeAnimation
+                    sequence={[
+                      'We plan custom family tours.',
+                      2000,
+                      'We orchestrate school expeditions.',
+                      2000,
+                      'We design college tour packages.',
+                      2000,
+                      'We coordinate corporate getaways.',
+                      2000,
+                      'We tailor honeymoon packages.',
+                      2000
+                    ]}
+                    wrapper="span"
+                    speed={45}
+                    repeat={Infinity}
+                  />
+                </span>
+              </div>
+            </div>
+
+            {/* Interactive category buttons inside the grid showcase */}
+            <div className="grid grid-cols-2 gap-3 mt-8 pt-6 border-t border-white/10">
+              <div className="flex items-center gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5 hover:bg-white/10 hover:border-orange-cta/30 transition-all duration-300 group/item">
+                <div className="h-8 w-8 rounded-lg bg-orange-cta/10 text-orange-cta flex items-center justify-center text-sm group-hover/item:scale-110 transition-transform">
+                  <FaMapMarkedAlt />
+                </div>
+                <span className="text-[11px] font-bold tracking-wide uppercase text-white/95">Family Leisure</span>
+              </div>
+
+              <div className="flex items-center gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5 hover:bg-white/10 hover:border-teal-accent/30 transition-all duration-300 group/item">
+                <div className="h-8 w-8 rounded-lg bg-teal-accent/10 text-teal-accent flex items-center justify-center text-sm group-hover/item:scale-110 transition-transform">
+                  <FaGraduationCap />
+                </div>
+                <span className="text-[11px] font-bold tracking-wide uppercase text-white/95">Student Trips</span>
+              </div>
+
+              <div className="flex items-center gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5 hover:bg-white/10 hover:border-blue-500/30 transition-all duration-300 group/item">
+                <div className="h-8 w-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center text-sm group-hover/item:scale-110 transition-transform">
+                  <FaSuitcase />
+                </div>
+                <span className="text-[11px] font-bold tracking-wide uppercase text-white/95">Corporate MICE</span>
+              </div>
+
+              <div className="flex items-center gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5 hover:bg-white/10 hover:border-pink-500/30 transition-all duration-300 group/item">
+                <div className="h-8 w-8 rounded-lg bg-pink-500/10 text-pink-400 flex items-center justify-center text-sm group-hover/item:scale-110 transition-transform">
+                  <FaHeart />
+                </div>
+                <span className="text-[11px] font-bold tracking-wide uppercase text-white/95">Honeymoons</span>
+              </div>
+            </div>
+
           </motion.div>
 
-          {/* Column 2: Text block */}
+          {/* Column 2: Detailed Company Story Narrative */}
           <motion.div 
             variants={{
               hidden: { opacity: 0, x: 50 },
               visible: { 
                 opacity: 1, 
                 x: 0,
-                transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+                transition: { staggerChildren: 0.1, delayChildren: 0.15 }
               }
             }}
             initial="hidden"
@@ -106,30 +180,37 @@ export const About: React.FC = () => {
               variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
               className="text-teal-accent font-heading font-bold text-xs uppercase tracking-wider block"
             >
-              Dream. Explore. Repeat.
+              Our Journey & Philosophy
             </motion.span>
             
             <motion.h2 
               variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 90, damping: 14 } } }}
               className="font-heading font-extrabold text-3xl md:text-4xl text-primary-navy"
             >
-              Crafting Exceptional Custom Travel Experiences Since 2026
+              Crafting Exceptional Custom Travel Experiences Across India
             </motion.h2>
             
             <motion.p 
               variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
-              className="text-text-gray text-sm md:text-base leading-relaxed"
+              className="text-text-gray text-xs md:text-sm leading-relaxed"
             >
-              WanderWish Holidays was established under the leadership of our founder, **Vinothini**, with a straightforward mission: to curate seamless, secure, highly personalized, and stunning travel itineraries that allow explorers to discover the global beauty with total peace of mind.
+              WanderWish Holidays was established as a premier destination management company with a clear and straightforward mission: to curate exceptionally detailed, secure, and personalized itineraries that turn your travel expectations into unforgettable real memories. We believe that holiday planning should be completely stress-free, which is why our agency coordinates every logistical element with absolute precision.
             </motion.p>
             
             <motion.p 
               variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
-              className="text-text-gray text-sm md:text-base leading-relaxed"
+              className="text-text-gray text-xs md:text-sm leading-relaxed"
             >
-              We specialize in creating customized holidays for couples, leisure packages for families, action-packed college getaways, and safely supervised educational field trips for schools. Grounded in transparency and outstanding customer support, WanderWish Holidays ensures that every tour is filled with beautiful, lifetime-lasting smiles.
+              We specialize in custom holiday planning. From securing hand-picked quality hotel accommodations and arranging safe, licensed private transport vehicles to managing certified local tour guides, ticketing admissions, and tailored dining experiences, we leave nothing to chance. Each itinerary is thoroughly vetted to guarantee seamless transitions and complete safety for every traveler.
             </motion.p>
 
+            <motion.p 
+              variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
+              className="text-text-gray text-xs md:text-sm leading-relaxed"
+            >
+              Our institutional and corporate operations are held to the highest industry standards. When coordinating massive student travel programs for schools and colleges, or designing reward getaways for corporate groups, we prioritize safety, timing coordination, and detailed supervision above all else. This professional approach has made WanderWish Holidays a trusted name for group expeditions.
+            </motion.p>
+            
             {/* Quote block */}
             <motion.div 
               variants={{
@@ -138,14 +219,12 @@ export const About: React.FC = () => {
               }}
               className="border-l-4 border-orange-cta bg-orange-50/50 p-5 rounded-r-xl"
             >
-              <p className="text-primary-navy font-medium italic text-xs md:text-sm leading-relaxed">
-                "Travel is not just about check-marking pins on a map; it is about building deep connections, creating joyful spaces, and discovering yourself in beautiful, foreign horizons. At WanderWish, we ensure your journey is as magnificent as your destination."
+              <p className="text-primary-navy font-semibold italic text-xs leading-relaxed">
+                "Travel is not just about check-marking pins on a physical map; it is about building deep connections, experiencing foreign cultures, and discovering yourself in beautiful, vast horizons. At WanderWish, we ensure your journey is as comfortable and magnificent as your destination."
               </p>
-              <span className="block text-right text-xs font-bold text-teal-accent mt-2">
-                - Vinothini, Founder
-              </span>
             </motion.div>
           </motion.div>
+
         </div>
 
         {/* Stats Section */}
